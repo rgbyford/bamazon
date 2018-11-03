@@ -16,12 +16,6 @@ con.connect(function (err) {
 database();
 
 function database() {
-    //con.connect(function (err) {
-    //    if (err) throw err;
-    //con.query("USE bamazon", function (err, result) {
-    //    if (err) throw err;
-    //});
-    //    con.query("SELECT * FROM products", async function (err, result) {
     con.query("SELECT * FROM products", function (err, result) {
         if (err) throw err;
         result.forEach(element => {
@@ -59,10 +53,8 @@ function database() {
                                 console.log(`Total price: $${totalPrice}`);
                                 query = con.query(`UPDATE products SET product_sales = product_sales + ${totalPrice} WHERE item_id = ${item};`,
                                     function (err, result) {
-//                                        console.log(query);
                                         process.exit();
                                     });
-                                //                                console.log (query);
                             });
                     } else {
                         // else refuse order, quit

@@ -2,21 +2,6 @@ var mysql = require('mysql');
 var inquirer = require('inquirer');
 
 const cTable = require('console.table');
-// const table = cTable.getTable([{
-//     name: 'foo',
-//     age: 10
-// }, {
-//     name: 'bar',
-//     age: 20
-// }]);
-
-// console.log(table);
-
-// prints
-// name  age
-// ----  ---
-// foo   10
-// bar   20
 
 var con = mysql.createConnection({
     database: "bamazon",
@@ -27,12 +12,9 @@ var con = mysql.createConnection({
 
 con.connect(function (err) {
     if (err) throw err;
-    //    console.log("connected as id ", con.threadId)
 });
 
 database();
-
-
 
 function database() {
     const supChoices = [{
@@ -78,7 +60,6 @@ function database() {
 }
 
 function newDept() {
-    console.log("No instructions for that!");
     con.query(`SELECT * from departments`, (err, results) => {
         const deptList = results;
         inquirer.prompt([{
