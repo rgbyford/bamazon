@@ -44,7 +44,7 @@ function database() {
     con.query("SELECT * FROM products", function (err, result) {
         if (err) throw err;
         inquirer.prompt([{
-            message: 'What would you like to do:',
+            message: 'What would you like to do?',
             name: 'userChoice',
             type: 'rawlist',
             choices: mgrChoices
