@@ -57,53 +57,61 @@ function database() {
         switch (choice.userChoice) {
             case 0:
                 // draw the table
-                let i = 1;
-                con.query (`SELECT departments.*, SUM(products.product_sales) AS sales, ` +
-                `SUM(products.product_sales) - over_head_costs AS profit FROM departments INNER JOIN `+
-//                con.query (`SELECT departments.*, over_head_costs, SUM(products.product_sales) AS sales FROM departments INNER JOIN `+
-                `products ON departments.department_name = products.department_name GROUP BY ` +
-                `departments.department_id`,  (err, results) => {
-                    console.log (results);
-                    const table = cTable.getTable (results);
-                    console.log (table);
-                    database();
-                });
-                // con.query(`SELECT * FROM departments;`, (err, depts) => {
-                //     if (err) throw err;
-                //     const tableData = [];
-                //     for (let i = 0; i < depts.length; i++) {
-                //         const name = depts[i].department_name;
-                //         const overhead = depts[i].over_head_costs;
-                //         const rowData = {};
-                //         const deptId = i;
-                //         query = con.query(`SELECT product_sales FROM products WHERE department_name = '${depts[i].department_name}';`, (err, sales) => {
-                //             if (err) throw err;
-                //             let deptSales = 0;
-                //             for (let j = 0; j < sales.length; j++) {
-                //                 deptSales += sales[j].product_sales;
-                //             }
-                //             rowData.dept_id = deptId;
-                //             rowData.dept_name = name;
-                //             rowData.ovhd = overhead;
-                //             rowData.sales = deptSales;
-                //             tableData.push(rowData);
-                //             if (i === depts.length - 1) {
-                //                 const table = cTable.getTable(tableData);
-                //                 console.log(table);
-                //                 database();
-                //             }
-                //         });
-                //     }
-                // });
+                con.query(`SELECT departments.*, SUM(products.product_sales) AS sales, ` +
+                    `SUM(products.product_sales) - over_head_costs AS profit FROM departments INNER JOIN ` +
+                    `products ON departments.department_name = products.department_name GROUP BY ` +
+                    `departments.department_id`, (err, results) => {
+                        const table = cTable.getTable(results);
+                        console.log(table);
+                        database();
+                    });
                 break;
             case 1:
                 // new department
-                console.log ("No instructions for that!");
-                database();
+                newDept();
                 break;
             case 2:
                 process.exit();
                 break;
         }
     });
+}
+
+function newDept() {
+    console.log("No instructions for that!");
+    con.query(`SELECT * from departments`, (err, results) => {
+        const deptList = results;
+        inquirer.prompt([{
+                message: "Department name:",
+                name: 'deptName',
+                type: 'input',
+                validate: function (deptName) {
+                    // Look up and make sure it doesn't exist
+                    for (let i = 0; i < results.length; i++) {
+                        if (deptList[i].department_name === deptName) {
+                            return (`That department already exists!`);
+                        }
+                    }
+                    return true;
+                }
+            },
+            {
+                message: 'Overhead costs:',
+                name: 'deptOverhead',
+                type: 'input',
+                validate: function (deptOverhead) {
+                    if (Number.isInteger(parseInt(deptOverhead))) {
+                        return (true);
+                    }
+                    return ('Enter an integer value!');
+                }
+            }
+        ]).then(choices => {
+            const values = [choices.deptName, choices.deptOverhead];
+            query = con.query(`INSERT INTO departments (department_name, over_head_costs) VALUES (?)`, [values]);
+            console.log(`Created ${choices.deptName} department`);
+            database();
+        });
+    });
+    return;
 }

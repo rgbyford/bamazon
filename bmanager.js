@@ -100,53 +100,67 @@ function database() {
                     });
                     break;
                 case 3:
-                    // add product
-                    inquirer.prompt([{
-                            message: "Product to add:",
-                            name: 'productName',
-                            type: 'input'
-                        },
-                        {
-                            message: "Into which department?",
-                            type: 'input',
-                            name: 'dept'
-                        },
-                        {
-                            message: "How many?",
-                            type: 'input',
-                            name: 'qtyToAdd',
-                            validate: function (toAdd) {
-                                if (Number.isInteger(parseInt(toAdd)) && toAdd >= 0 && toAdd < 1000) {
-                                    return true;
-                                }
-                                return (`That's too many!  We won't have room for them!`);
-                            }
-                        },
-                        {
-                            message: "What wiil the price be?",
-                            type: 'input',
-                            name: 'price',
-                            validate: function (price) {
-                                price = +price;
-                                if (isNaN(price)) {
-                                    return ('Enter a valid price!');
-                                }
-                                return (true);
-                            }
-
-                        }
-                    ]).then(choices => {
-                        let values = [choices.productName, choices.dept, choices.qtyToAdd, choices.price];
-                        query = con.query(`INSERT INTO products (product_name, department_name, stock_quantity, price) VALUES (?)`, [values]);
-//                        query = con.query(`INSERT INTO products (product_name, department_name, stock_quantity, price) VALUES ('${choices.productName}', '${choices.dept}', ${choices.qtyToAdd}, ${choices.price})`);
-//                        console.log(query);
-                        database ();
-                    });
+                    addProduct();
                     break;
                 case 4:
                     process.exit();
                     break;
             }
+        });
+    });
+}
+
+function addProduct() {
+    con.query(`SELECT * from departments`, (err, results) => {
+        const deptList = results;
+        inquirer.prompt([{
+                message: "Product to add:",
+                name: 'productName',
+                type: 'input'
+            },
+            {
+                message: "Into which department?",
+                type: 'input',
+                name: 'dept',
+                validate: function (deptName) {
+                    // Look up and make sure it exists
+                    for (let i = 0; i < results.length; i++) {
+                        if (deptList[i].department_name === deptName) {
+                            return true;
+                        }
+                    }
+                    return (`That department doesn't exist!`);
+                }
+            },
+            {
+                message: "How many?",
+                type: 'input',
+                name: 'qtyToAdd',
+                validate: function (toAdd) {
+                    if (Number.isInteger(parseInt(toAdd)) && toAdd >= 0 && toAdd < 1000) {
+                        return true;
+                    }
+                    return (`That's too many!  We won't have room for them!`);
+                }
+            },
+            {
+                message: "What wiil the price be?",
+                type: 'input',
+                name: 'price',
+                validate: function (price) {
+                    price = +price;
+                    if (isNaN(price)) {
+                        return ('Enter a valid price!');
+                    }
+                    return (true);
+                }
+            }
+        ]).then(choices => {
+            let values = [choices.productName, choices.dept, choices.qtyToAdd, choices.price];
+            query = con.query(`INSERT INTO products (product_name, department_name, stock_quantity, price) VALUES (?)`, [values]);
+            //                        query = con.query(`INSERT INTO products (product_name, department_name, stock_quantity, price) VALUES ('${choices.productName}', '${choices.dept}', ${choices.qtyToAdd}, ${choices.price})`);
+            //                        console.log(query);
+            database();
         });
     });
 }
